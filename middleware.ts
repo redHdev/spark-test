@@ -9,12 +9,12 @@ export async function middleware(req: NextRequest) {
     data: { session },
   } = await supabase.auth.getSession();
 
-  if (!session) {
-    const redirectUrl = req.nextUrl.clone();
-    redirectUrl.pathname = '/auth/signin';
-    redirectUrl.searchParams.set(`redirectedFrom`, req.nextUrl.pathname);
-    return NextResponse.redirect(redirectUrl);
-  }
+  // if (!session) {
+  //   const redirectUrl = req.nextUrl.clone();
+  //   redirectUrl.pathname = '/auth/signin';
+  //   redirectUrl.searchParams.set(`redirectedFrom`, req.nextUrl.pathname);
+  //   return NextResponse.redirect(redirectUrl);
+  // }
 
   return res;
 }
