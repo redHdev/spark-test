@@ -23,6 +23,8 @@ interface MessagesData {
 interface MessageContextProps {
     messagesData: MessagesData;
     setMessagesData: React.Dispatch<React.SetStateAction<MessagesData>>;
+    newConvo: boolean;
+    setNewConvo: React.Dispatch<React.SetStateAction<boolean>>;
 }
 
 const MessageContext = createContext<MessageContextProps | undefined>(undefined);
@@ -37,6 +39,7 @@ export const useMessages = () => {
 
 export const MessageProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
     const [messagesData, setMessagesData] = useState<MessagesData>({ messages: [], loading: false, error: null });
+    const [newConvo, setNewConvo] = useState<boolean>(false);
 
     const { promptConfig, setPromptConfig } = usePrompt();
 
@@ -65,7 +68,7 @@ export const MessageProvider: React.FC<{ children: React.ReactNode }> = ({ child
     }, [messagesData]);
 
     return (
-        <MessageContext.Provider value={{ messagesData, setMessagesData }}>
+        <MessageContext.Provider value={{ messagesData, setMessagesData, newConvo, setNewConvo }}>
             {children}
         </MessageContext.Provider>
     );

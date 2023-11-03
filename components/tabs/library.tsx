@@ -8,6 +8,7 @@ import { useSupabaseClient, useUser } from '@supabase/auth-helpers-react';
 import { useActiveComponent } from '../../context/NavContext';
 import { useSelectedItem } from '../../context/SettingsContext';
 import { useConfig } from '../../context/ConfigContext';
+import { useMessages } from '../../context/MessageContext';
 
 interface Mod {
   xTitle: string;
@@ -44,8 +45,9 @@ const useStyles = createStyles((theme) => ({
 
 export default function Library() {
   const [mod, setMod] = useState<Mod[]>([]);
-  const { setActiveComponent } = useActiveComponent();
+  const { setActiveComponent, charSwitch, setCharSwitch } = useActiveComponent();
   const { setSelectedItem } = useSelectedItem();
+  const { setNewConvo } = useMessages();
   const { sparkConfig } = useConfig();
   const [modStatuses, setModStatuses] = useState<{ [key: string]: { status: string, text: string } }>({});
   const [sortMod, setSortMod] = useState('Oldest');
@@ -286,7 +288,8 @@ export default function Library() {
             }
             return;
           }
-
+        setCharSwitch(true);
+        setNewConvo(true);
         setSelectedItem(mod);
         setActiveComponent('Companions');
       }

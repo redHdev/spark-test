@@ -19,6 +19,7 @@ import { useActiveComponent } from '../../context/NavContext';
 import { useCompanion } from '../../context/MemoriesContext';
 import { usePrompt } from '../../context/PromptConfig';
 import { useConfig } from '../../context/ConfigContext';
+import { useMessages } from '../../context/MessageContext';
 
 interface Mod {
   xTitle: string;
@@ -66,6 +67,7 @@ export default function Chatbot() {
   const [isNewUser, setIsNewUser] = useState(false);
   const [companion, setCompanion] = useState<BackendCompanionsType | null>(null);
   const {promptConfig, setPromptConfig} = usePrompt();
+  const { setNewConvo } = useMessages();
   const [backendModsValue, setBackendModsValue] = useState(promptConfig?.backendMods);
   const {
     setActiveComponent,
@@ -74,6 +76,8 @@ export default function Chatbot() {
     setOpenMods,
     setOpenConvos,
     setOpenCompanions,
+    setCharSwitch,
+    charSwitch,
     openConvos,
     openMods,
     openCompanions,
@@ -222,6 +226,7 @@ export default function Chatbot() {
       const handleOpenModsClick = () => {
         if (!sparkConfig?.main.cloudPlayOnly) {
           setOpenMods(true);
+          setNewConvo(true);
         } else {
           setActiveComponent('Library');
         }
@@ -327,6 +332,13 @@ export default function Chatbot() {
                 setCompanion(promptConfig?.backendCompanions as BackendCompanionsType || null);
               }, []);
 
+              useEffect(() => {
+                if (charSwitch) {
+                  setCompanion(null);
+                  setCharSwitch(false);
+                }
+              }, []);
+
               const handleStopUsingClick = () => {
                 if(promptConfig){
                   setPromptConfig({
@@ -340,7 +352,8 @@ export default function Chatbot() {
                   });
                 }
                 setCompanion(null);
-                window.location.reload();
+                setActiveComponent('Laboratory')
+                setShowCompanions(true);
               }
 
               let companionData: any = companion;

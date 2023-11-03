@@ -108,7 +108,7 @@ export default function Sidebar() {
   const user = useUser();
   const userId = user?.id;
   const { classes, cx, theme } = useStyles();
-  const { opened, toggleSidebar } = useSidebarContext();
+  const { opened, setOpened, toggleSidebar } = useSidebarContext();
   const mobileViewInitial = typeof window !== 'undefined' ? window.innerWidth < parseInt(theme.breakpoints.sm.replace('px', ''), 10) : false;
   const [mobileView, setMobileView] = useState(mobileViewInitial);
   const [devMode, setDevMode] = useState(false);
@@ -147,7 +147,7 @@ export default function Sidebar() {
                   setShowCompanions(false);
                   break;
               case 'companions':
-                  setActiveComponent('Companions');
+                  setActiveComponent('Laboratory');
                   setShowCompanions(true);
                   break;
               case 'laboratory':
@@ -236,17 +236,17 @@ export default function Sidebar() {
   const handleLinkClick = (event: React.MouseEvent<HTMLAnchorElement, MouseEvent>, item: { component: string }) => {
       event.preventDefault();
       if(item.component === 'MyCompanions') {
-          setActiveComponent('Companions');
+          setActiveComponent('Laboratory');
           setShowCompanions(true);
           if (mobileView) {
-              toggleSidebar();
+              setOpened(false);
           }
           return;
       }
       setShowCompanions(false);
       setActiveComponent(item.component);
       if (mobileView) {
-          toggleSidebar();
+          setOpened(false);
       }
   };
 

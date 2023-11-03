@@ -587,7 +587,7 @@ padding: '5.5%'
               <Text style={{fontWeight:'400'}}>Describe how it should act and what to say</Text>
             </List.Item>
             <List.Item>
-              <Text style={{fontWeight:'400'}}>Anything on the web before Sept. 2022 works</Text>
+              <Text style={{fontWeight:'400'}}>Anything on the web before Sept. 2023</Text>
             </List.Item>
           </List>
           </Box>

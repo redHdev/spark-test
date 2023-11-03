@@ -18,6 +18,8 @@ type NavContextType = {
   setOpenLab: React.Dispatch<React.SetStateAction<boolean>>;
   openConvos: boolean;
   setOpenConvos: React.Dispatch<React.SetStateAction<boolean>>;
+  setCharSwitch: React.Dispatch<React.SetStateAction<boolean>>;
+  charSwitch: boolean;
   openCompanions: boolean;
   setOpenCompanions: React.Dispatch<React.SetStateAction<boolean>>;
   data: {
@@ -43,9 +45,10 @@ export const useActiveComponent = () => {
 };
 
 export const NavProvider: React.FC<NavProviderProps> = ({ children }) => {
-  const [activeComponent, setActiveComponent] = useState<string>('');
+  const [activeComponent, setActiveComponent] = useState<string>('Companions');
   const [openSettings, setOpenSettings] = useState<boolean>(false);
   const [openFiles, setOpenFiles] = useState<boolean>(false);
+  const [charSwitch, setCharSwitch] = useState<boolean>(false);
   const [openMods, setOpenMods] = useState<boolean>(false);
   const [openLab, setOpenLab] = useState<boolean>(false);
   const [openConvos, setOpenConvos] = useState<boolean>(false);
@@ -58,7 +61,7 @@ export const NavProvider: React.FC<NavProviderProps> = ({ children }) => {
   ];
 
   return (
-    <NavContext.Provider value={{ activeComponent, setOpenLab, openLab, setActiveComponent, openSettings, setOpenSettings, openFiles, setOpenFiles, openMods, setOpenMods, openConvos, setOpenConvos, openCompanions, setOpenCompanions, data }}>
+    <NavContext.Provider value={{ activeComponent, setOpenLab, openLab, charSwitch, setCharSwitch, setActiveComponent, openSettings, setOpenSettings, openFiles, setOpenFiles, openMods, setOpenMods, openConvos, setOpenConvos, openCompanions, setOpenCompanions, data }}>
       {children}
     </NavContext.Provider>
   );

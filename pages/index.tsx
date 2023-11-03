@@ -58,10 +58,6 @@ export default function IndexPage() {
   ]
 
   useEffect(() => {
-    setActiveComponent('Companions');
-  }, []);
-
-  useEffect(() => {
       if (!user) return;
 
       let userModCreationInProgress = false;
@@ -113,25 +109,14 @@ export default function IndexPage() {
 
 
   useEffect(() => {
-    // Function to update state based on viewport width
     const updateMobileView = () => {
       setMobileView(window.innerWidth <= 760);
     };
 
-    // Add event listener for window resize
     window.addEventListener("resize", updateMobileView);
 
-    // Cleanup event listener on unmount
     return () => window.removeEventListener("resize", updateMobileView);
   }, []);
-
-
-
-useEffect(() => {
-  if (window.innerWidth <= 768) {
-    setOpened(false);
-  }
-}, [activeComponent]);
 
 const [isHeaderVisible, setHeaderVisibility] = useState(true);
 

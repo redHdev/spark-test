@@ -31,6 +31,8 @@ import { ConfigProvider } from "../context/ConfigContext";
 import { getDomainName } from "../lib/helpers";
 import { PromptProvider } from "../context/PromptConfig";
 
+const queryClient = new QueryClient();
+
 const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL || '';
 const SUPABASE_ANON_KEY = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || '';
 const supabaseClient = createClient<Database>(SUPABASE_URL, SUPABASE_ANON_KEY, {
@@ -40,48 +42,28 @@ const supabaseClient = createClient<Database>(SUPABASE_URL, SUPABASE_ANON_KEY, {
     persistSession: true,
   },
 });
-
-const queryClient = new QueryClient();
-
-function App({
-  Component,
-  pageProps,
-}: AppProps<{ cookies?: NextApiRequestCookies; initialSession?: Session | null } & SSRConfig>) {
+function App({ Component, pageProps }: AppProps<{ initialSession?: Session | null } & SSRConfig>) {
   const router = useRouter();
-
-  function checkAndDeleteDuplicateTokens() {
-    const allCookies = Cookies.get();
-    const authTokenCount = Object.keys(allCookies).filter(key => key === 'supabase-auth-token').length;
-
-    if (authTokenCount > 1) {
-      return true;
-    }
-    return false;
-  }
-
-  const [supabaseClient] = useState(() =>
-    createBrowserSupabaseClient({
-      cookieOptions: {
-        domain: 'localhost',
-        path: '/',
-        sameSite: 'lax',
-        secure: true,
-      },
-    })
-  );
+  // redirect to signin page if user is signed out while being on a protected page
+  const [supabaseClient] = useState(() => createBrowserSupabaseClient({
+    cookieOptions: {
+       domain: "chat.spark.study",
+       maxAge: 100000000,
+       path: "/",
+       sameSite: "lax",
+       secure: true,
+     },
+  }));
   useEffect(() => {
-    if (checkAndDeleteDuplicateTokens()) {
-      window.location.href = process.env.SITE_URL || "";
-    }
     const {
       data: { subscription },
     } = supabaseClient.auth.onAuthStateChange((event) => {
-      if (event === 'SIGNED_OUT' && (router.asPath.startsWith('/app') || router.asPath.startsWith('/account')))
+      if (event === 'SIGNED_OUT' && (router.asPath.startsWith('/app')))
         router.replace('/auth/signin');
     });
 
     return () => subscription.unsubscribe();
-  }, [supabaseClient.auth, router.asPath]);
+  }, [supabaseClient.auth, router.asPath]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
@@ -89,7 +71,7 @@ function App({
 
   useEffect(() => {
     if (typeof window !== 'undefined' && window.location.pathname.includes('/chat/')) {
-      window.location.href = process.env.SITE_URL || "";
+      window.location.href = "/";
     }
   }, []);
 
@@ -113,6 +95,7 @@ function App({
         <link rel="shortcut icon" href="/favicon.ico" />
         <meta name="viewport" content="minimum-scale=1, width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no"/>
       </Head>
+      <QueryClientProvider client={queryClient}>
       <SessionContextProvider supabaseClient={supabaseClient} initialSession={pageProps.initialSession}>
       <ConfigProvider>
         <PromptProvider>
@@ -120,7 +103,6 @@ function App({
             <IntlProvider locale="en">
               <MessageProvider>
                 <CompanionProvider>
-                  <QueryClientProvider client={queryClient}>
                     <ColorSchemeProvider colorScheme={colorScheme} toggleColorScheme={toggleColorScheme}>
                       <MantineProvider
                         withGlobalStyles
@@ -153,7 +135,6 @@ function App({
                           )}
                       </MantineProvider>
                     </ColorSchemeProvider>
-                  </QueryClientProvider>
                 </CompanionProvider>
               </MessageProvider>
             </IntlProvider>
@@ -161,16 +142,9 @@ function App({
         </PromptProvider>
       </ConfigProvider>
       </SessionContextProvider>
+      </QueryClientProvider>
     </>
   );
 }
 
 export default appWithTranslation(App);
-
-export const getServerSideProps: GetServerSideProps = async ({ req }) => {
-  return {
-    props: {
-      cookies: req.cookies,
-    },
-  };
-};

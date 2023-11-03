@@ -1,7 +1,6 @@
 import { NextApiRequest, NextApiResponse } from 'next';
 import multer from 'multer';
-import mammoth from 'mammoth';
-import { getDocument } from 'pdfjs-dist';
+import { getTextExtractor } from 'office-text-extractor';
 
 interface NextApiRequestWithFiles extends NextApiRequest {
   files: Express.Multer.File[];
@@ -15,36 +14,26 @@ export const config = {
   },
 };
 
-const processPDF = async (fileBuffer: Buffer): Promise<string> => {
-  const uint8Array = new Uint8Array(fileBuffer.buffer);
-  const loadingTask = getDocument({ data: uint8Array });
-  const pdf = await loadingTask.promise;
-
-  let text = '';
-  for (let i = 1; i <= pdf.numPages; i++) {
-    const page = await pdf.getPage(i);
-    const content = await page.getTextContent();
-    text += content.items.map(item => 'str' in item ? item.str : '').join(' ');
-  }
-  return text;
-};
+const extractor = getTextExtractor();
 
 const handleFileContent = async (fileBuffer: Buffer, fileType: string, fileName: string): Promise<string> => {
-  if (fileType === 'application/pdf') {
-    return await processPDF(fileBuffer);
+  const supportedMimeTypes = [
+    'application/pdf',
+    'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+  ];
+
+  if (supportedMimeTypes.includes(fileType)) {
+    try {
+      return await extractor.extractText({ input: fileBuffer, type: 'buffer' });
+    } catch (err) {
+      console.error(`Error processing file (${fileType}):`, err);
+      throw new Error(`Error processing file (${fileType})`);
+    }
   } else if (fileType === 'text/plain' || ['application/xml', 'text/xml', 'text/html'].includes(fileType) || fileName.endsWith('.md') || fileName.endsWith('.mdx') || fileType === 'application/rtf') {
     return fileBuffer.toString('utf-8');
   } else if (fileType === 'application/json') {
     const content = JSON.parse(fileBuffer.toString('utf-8'));
     return JSON.stringify(content, null, 2);
-  } else if (fileType === 'application/vnd.openxmlformats-officedocument.wordprocessingml.document') {
-    try {
-      const result = await mammoth.extractRawText({ buffer: fileBuffer });
-      return result.value;
-    } catch (err) {
-      console.error('Error processing DOCX file:', err);
-      throw new Error('Error processing DOCX file');
-    }
   } else if (fileType === 'application/vnd.oasis.opendocument.text') {
     throw new Error("Processing .odt files is not supported currently.");
   }

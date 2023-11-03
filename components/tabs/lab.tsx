@@ -30,7 +30,7 @@ export default function Laboratory() {
         setOpenLab(false);
         setShowCompanions(false);
         setActiveButton('Companions');
-        setButtonText("Build a shareable companion bot using custom memories, prompts and uploaded files.");
+        setButtonText("Build a shareable chatbots using custom memories, prompts and uploaded files.");
       }
     }
   };

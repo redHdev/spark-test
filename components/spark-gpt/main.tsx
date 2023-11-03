@@ -1,4 +1,5 @@
 import React, { useRef, useState, useEffect, useCallback, useMemo } from "react";
+import { useRouter } from 'next/router';
 import { ActionIcon, Text, ScrollArea, Box, Flex, Center, Title, Alert, Loader, ThemeIcon } from "@mantine/core";
 import { useCompletion } from 'ai/react';
 import Image from 'next/image';
@@ -81,7 +82,7 @@ export function SparkGPT() {
   const userId = user?.id;
   const scrollRef = useRef<HTMLDivElement>(null);
   const intl = useIntl();
-  const { messagesData } = useMessages();
+  const { messagesData, setMessagesData, newConvo, setNewConvo } = useMessages();
   const isMobile = useMediaQuery("(max-width: 480px)");
   const avatarUrl = user?.user_metadata ?.avatar_url;
   const [editingMessageIndex, setEditingMessageIndex] = useState<number | null>(null);
@@ -97,7 +98,7 @@ export function SparkGPT() {
   const [testState, setTestState] = useState(null);
   const adminUserId = '95953152-6e6a-4ac4-9f67-9dda8fc4c134'
   const [isAdmin, setIsAdmin] = useState(false);
-
+  const router = useRouter();
   const {promptConfig, setPromptConfig} = usePrompt();
 
   useEffect(() => {
@@ -107,6 +108,20 @@ export function SparkGPT() {
       setIsAdmin(false);
     }
   }, [adminUserId, userId])
+
+  useEffect(() => {
+    const clearChatHistoryAndURL = () => {
+      setMessagesData(prevState => ({
+        ...prevState,
+        messages: [],
+      }));
+      setNewConvo(false);
+      router.replace('/chat');
+    };
+    if (window.location.pathname.includes('/chat/') && newConvo) {
+      clearChatHistoryAndURL();
+    }
+  }, [newConvo, setMessagesData, setNewConvo]);
 
   let xIcon: any;
   let iconColor: any;
@@ -654,7 +669,7 @@ export function SparkGPT() {
                       <Title style={{opacity:'0.2', fontSize:'50px'}}>SPARK</Title>
                       <Title style={{color:'#153B89', fontSize:'50px', opacity:'0.5'}}>4</Title>
                     </Flex>
-                    <Text size="sm" style={{width:"300px", opacity:'0.5', textAlign:'center', paddingTop:'10px', borderTop:'1px solid rgba(160,160,160,0.82)', marginTop:'5px'}}>Spark Engine may produce innacurate information about people, places or facts.</Text>
+                    <Text size="sm" style={{width:"300px", opacity:'0.5', textAlign:'center', paddingTop:'10px', borderTop:'1px solid rgba(160,160,160,0.82)', marginTop:'5px'}}>Spark Study may produce innacurate information about people, places or facts.</Text>
                   </Flex>
                 </Flex>
               </Center>

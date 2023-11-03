@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useState, useEffect, KeyboardEvent, ChangeEvent } from 'react';
 import { Button, Box, ScrollArea, Select, ActionIcon, Paper, Text, Tabs, TextInput, Flex, Image, Title, Badge, Modal, ThemeIcon } from '@mantine/core';
 import { IconBrain, IconFile, IconRobot, IconPhotoPlus, IconTrash, IconPhoto, IconDownload, IconUpload, IconChevronRight, IconFileTypePpt, IconFileTypeTxt, IconFileTypePdf, IconFileTypeDocx, IconFileTypeXml, IconFileTypeXls, IconFileTypeHtml, IconPlus, IconArrowBack, IconPencil, IconCheck, IconClipboard, IconBrandSpeedtest, IconMessageChatbot } from '@tabler/icons-react';
 import FullScreenTextEditor from './companions/texteditor';
@@ -11,6 +11,7 @@ import { usePrompt } from '../../context/PromptConfig';
 import { useActiveComponent } from '../../context/NavContext';
 import { useCompanion } from '../../context/MemoriesContext';
 import { useConfig } from '../../context/ConfigContext';
+import { useMessages } from '../../context/MessageContext';
 import styled, { keyframes } from 'styled-components';
 import StyledLoader from '../loader';
 
@@ -47,6 +48,7 @@ export default function Companions() {
   const [uploadedFiles, setUploadedFiles] = useState<string[]>([]);
 
   const {promptConfig, setPromptConfig} = usePrompt();
+  const { setNewConvo } = useMessages();
 
   const shouldShowComponent = (componentName: string) => {
       if (!sparkConfig || !accountType) {
@@ -326,8 +328,25 @@ const getFileIcon = (fileName: string) => {
     }
   };
 
-  const handleChatcodeSubmit = async (e: React.MouseEvent<HTMLButtonElement>) => {
+  const handleChatcodeChange = (e: ChangeEvent<HTMLInputElement>) => {
+    setLocalChatcode(e.target.value.toUpperCase().slice(0, 5));
+  };
+
+  const handleKeyPress = (e: KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === 'Enter') {
       e.preventDefault();
+      handleChatcodeSubmit();
+    }
+  };
+
+  const clearInput = () => {
+    setLocalChatcode('');
+  };
+
+  const handleChatcodeSubmit = async (e?: React.FormEvent) => {
+    if (e) {
+      e.preventDefault();
+    }
       const { data: companionData, error: companionError } = await supabaseClient
           .from('companions')
           .select('*')
@@ -335,11 +354,13 @@ const getFileIcon = (fileName: string) => {
 
       if (companionError) {
           console.error('Error searching companions by chatcode:', companionError);
+          setLocalChatcode('');
           return;
       }
 
       if (!companionData?.length) {
           console.warn('No companion found with the provided chatcode');
+          setLocalChatcode('');
           return;
       }
 
@@ -375,6 +396,7 @@ const getFileIcon = (fileName: string) => {
               setSharedCompanions(prevCompanions => [...prevCompanions, companion]);
           }
       }
+      clearInput();
   };
 
   const copyToClipboard = (text: string) => {
@@ -418,6 +440,7 @@ const getFileIcon = (fileName: string) => {
             }
           });
         }
+          setNewConvo(true);
           setActiveComponent("Companions");
           setShowCompanions(false);
       };
@@ -843,10 +866,11 @@ const getFileIcon = (fileName: string) => {
           {sharedCompanions && sharedCompanions.length > 0 && (
             <>
             <TextInput
-                value={localChatcode}
-                onChange={(e) => setLocalChatcode(e.target.value)}
-                placeholder="Enter Chatcode..."
-                label="Chatcode"
+              value={localChatcode}
+              onChange={handleChatcodeChange}
+              onKeyPress={handleKeyPress}
+              placeholder="Enter Chatcode..."
+              label="Get companions"
             />
             <Button onClick={handleChatcodeSubmit} style={{ marginLeft:'7.5px', transform:'translateY(24px)' }}>
                 Submit
@@ -863,10 +887,11 @@ const getFileIcon = (fileName: string) => {
             <img src="general/shared_companions_filler.png" alt="Add a shared companion!" style={{width:'300px'}}/>
             <Flex style={{marginTop:'-15px', marginBottom:'15px'}}>
             <TextInput
-                value={localChatcode}
-                onChange={(e) => setLocalChatcode(e.target.value)}
-                placeholder="Enter Chatcode..."
-                label="Get companions"
+              value={localChatcode}
+              onChange={handleChatcodeChange}
+              onKeyPress={handleKeyPress}
+              placeholder="Enter Chatcode..."
+              label="Get companions"
             />
             <ActionIcon onClick={handleChatcodeSubmit} size="lg" variant="light" color="blue" style={{ marginLeft:'7.5px', transform:'translateY(24px)' }}>
                 <IconDownload size={20}/>
